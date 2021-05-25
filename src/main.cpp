@@ -322,6 +322,10 @@ void display(sf::RenderWindow& window, struct CHESSGAME& game, sf::Font& font,
       (window.getView().getSize().y + text.getCharacterSize()) / 2));
     window.draw(text);
   } else {
+
+    // lock the view until users restart a game
+    game.timer.tick();
+
     if (!game.gong_end)
     {
       stopNoises(sounds);
@@ -331,6 +335,10 @@ void display(sf::RenderWindow& window, struct CHESSGAME& game, sf::Font& font,
 
     if (black_time <= 0)
     {
+      // lock the view until users restart a game
+      game.black_time = -1000.;
+      game.white_time = 1000.;
+
       window.clear(sf::Color::White);
 
       text.setCharacterSize(100);
@@ -342,6 +350,10 @@ void display(sf::RenderWindow& window, struct CHESSGAME& game, sf::Font& font,
         (window.getView().getSize().y - text.getCharacterSize()) / 2));
       window.draw(text);
     } else {
+      // lock the view until users restart a game
+      game.white_time = -1000.;
+      game.black_time = 1000.;
+
       window.clear(sf::Color::Black);
 
       text.setCharacterSize(100);
