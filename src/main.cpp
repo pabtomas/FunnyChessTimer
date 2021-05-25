@@ -447,7 +447,7 @@ min 1 et max 60)\n";
   attributeSounds(result);
 
   std::cout << "\nCommandes:\n- Echap => Quitte le programme,\n- Control \
-gauche ou Entrée: Déclenche le compteur de l'adversaire,\n- Espace => \
+gauche ou Entrée => Déclenche le compteur de l'adversaire,\n- Espace => \
 Remet les compteurs à 0,\n- Retour Arrière => Echange les couleurs des \
 joueurs,\n- \"+\" => Ajoute une minute (max 60) et remet les compteurs à \
 0,\n- \"-\" => Enlève une minute (min 1) et remet les compteurs à 0.\n\n";
