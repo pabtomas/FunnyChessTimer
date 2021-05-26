@@ -1,93 +1,4 @@
-#include <algorithm>
-#include <cctype>
-#include <chrono>
-#include <ctime>
-#include <iostream>
-#include <iterator>
-#include <locale>
-#include <random>
-#include <SFML/Graphics.hpp>
-#include <SFML/Audio.hpp>
-#include <string>
-#include <vector>
-
-#define DEFAULT_TIME 5
-#define MIN_TIME 1
-#define MAX_TIME 60
-#define MAX_LENGTH_PLAYER_NAME 32
-
-#define WIN_WIDTH 1000
-#define WIN_HEIGHT 715
-
-#define WHITE_TURN true
-#define SECS_PER_MIN 60
-#define MILLIS_PER_SEC 1000
-#define MILLIS_PER_MIN (MILLIS_PER_SEC * SECS_PER_MIN)
-
-#define DEFAULT_WHITE_PLAYER "Joueur 1"
-#define DEFAULT_BLACK_PLAYER "Joueur 2"
-
-#define GONG_SOUND 0
-#define FIRST_KUNGFU_SOUND 1
-#define NB_SOUNDS 5
-
-class Timer
-{
-  private:
-
-    std::chrono::steady_clock::time_point m_Start;
-
-  public:
-
-    Timer() {}
-
-    void tick()
-    {
-      m_Start = std::chrono::steady_clock::now();
-    }
-
-    long int duration() const
-    {
-      return std::chrono::duration_cast<std::chrono::milliseconds>(
-        std::chrono::steady_clock::now() - m_Start).count();
-    }
-};
-
-struct CHESSGAME
-{
-  int time;
-  bool turn;
-  bool started;
-  bool pressed;
-  bool gong_end;
-  Timer timer;
-  long int white_time;
-  long int black_time;
-  std::string white_player;
-  std::string black_player;
-  size_t white_player_sound;
-  size_t black_player_sound;
-};
-
-void leftTrim(std::string &s)
-{
-  s.erase(s.begin(), std::find_if(s.begin(), s.end(), [](unsigned char ch) {
-    return !std::isspace(ch);
-  }));
-}
-
-void rightTrim(std::string &s)
-{
-  s.erase(std::find_if(s.rbegin(), s.rend(), [](unsigned char ch) {
-    return !std::isspace(ch);
-  }).base(), s.end());
-}
-
-void trim(std::string &s)
-{
-  leftTrim(s);
-  rightTrim(s);
-}
+#include "main.h"
 
 void update(struct CHESSGAME& game)
 {
@@ -111,24 +22,9 @@ void stopNoises(std::vector<sf::Sound>& sounds)
   }
 }
 
-void attributeSounds(struct CHESSGAME& game)
-{
-  std::vector<size_t> playable_sounds = {};
-  for (size_t i = FIRST_KUNGFU_SOUND; i < NB_SOUNDS; i++)
-  {
-    playable_sounds.push_back(i);
-  }
-
-  unsigned seed = std::chrono::system_clock::now().time_since_epoch().count();
-  std::shuffle(playable_sounds.begin(), playable_sounds.end(),
-    std::default_random_engine(seed));
-
-  game.white_player_sound = playable_sounds[0];
-  game.black_player_sound = playable_sounds[1];
-}
-
 void catchEvents(sf::RenderWindow& window, sf::Event& event,
-  struct CHESSGAME& game, std::vector<sf::Sound>& sounds)
+  struct CHESSGAME& game, std::vector<sf::Sound>& sounds,
+  std::vector<std::unique_ptr<Avatar>>& avatars)
 {
   sf::View view;
   while(window.pollEvent(event))
@@ -152,7 +48,8 @@ void catchEvents(sf::RenderWindow& window, sf::Event& event,
             game.white_time = game.time * MILLIS_PER_MIN;
             game.black_time = game.time * MILLIS_PER_MIN;
             game.turn = WHITE_TURN;
-            attributeSounds(game);
+            avatars[game.white_player_avatar]->attributeSounds();
+            avatars[game.black_player_avatar]->attributeSounds();
             game.gong_end = false;
           } else if (event.key.code == sf::Keyboard::Add) {
             game.started = false;
@@ -165,7 +62,8 @@ void catchEvents(sf::RenderWindow& window, sf::Event& event,
             game.white_time = game.time * MILLIS_PER_MIN;
             game.black_time = game.time * MILLIS_PER_MIN;
             game.turn = WHITE_TURN;
-            attributeSounds(game);
+            avatars[game.white_player_avatar]->attributeSounds();
+            avatars[game.black_player_avatar]->attributeSounds();
             game.gong_end = false;
           } else if (event.key.code == sf::Keyboard::Subtract) {
             game.started = false;
@@ -178,18 +76,24 @@ void catchEvents(sf::RenderWindow& window, sf::Event& event,
             game.white_time = game.time * MILLIS_PER_MIN;
             game.black_time = game.time * MILLIS_PER_MIN;
             game.turn = WHITE_TURN;
-            attributeSounds(game);
+            avatars[game.white_player_avatar]->attributeSounds();
+            avatars[game.black_player_avatar]->attributeSounds();
             game.gong_end = false;
           } else if (event.key.code == sf::Keyboard::BackSpace) {
             std::string tmp_name = game.white_player;
             game.white_player = game.black_player;
             game.black_player = tmp_name;
 
+            size_t tmp_avatar = game.white_player_avatar;
+            game.white_player_avatar = game.black_player_avatar;
+            game.black_player_avatar = tmp_avatar;
+
+            bool tmp_id = game.white_player_id;
+            game.white_player_id = game.black_player_id;
+            game.black_player_id = tmp_id;
+
             if (game.started)
             {
-              size_t tmp_sound = game.white_player_sound;
-              game.white_player_sound = game.black_player_sound;
-              game.black_player_sound = tmp_sound;
               long int tmp_time = game.white_time;
               game.white_time = game.black_time;
               game.black_time = tmp_time;
@@ -201,20 +105,28 @@ void catchEvents(sf::RenderWindow& window, sf::Event& event,
             stopNoises(sounds);
             if (!game.started)
             {
-              sounds[GONG_SOUND].play();
+              sounds[GONGSOUND_INDEX].play();
               game.started = true;
             } else {
               if (game.turn == WHITE_TURN)
               {
-                sounds[game.white_player_sound].play();
+                avatars[game.white_player_avatar]->playSound(sounds,
+                  game.white_player_id);
                 game.white_time = game.white_time - game.timer.duration();
               } else {
-                sounds[game.black_player_sound].play();
+                avatars[game.black_player_avatar]->playSound(sounds,
+                  game.black_player_id);
                 game.black_time = game.black_time - game.timer.duration();
               }
             }
             game.turn = !game.turn;
             game.timer.tick();
+          } else if (event.key.code == sf::Keyboard::LShift) {
+            game.white_player_avatar =
+              (game.white_player_avatar + 1) % AVATAR_NB;
+          } else if (event.key.code == sf::Keyboard::Tab) {
+            game.black_player_avatar =
+              (game.black_player_avatar + 1) % AVATAR_NB;
           }
         }
         game.pressed = true;
@@ -226,7 +138,8 @@ void catchEvents(sf::RenderWindow& window, sf::Event& event,
 }
 
 void display(sf::RenderWindow& window, struct CHESSGAME& game, sf::Font& font,
-  std::vector<sf::Sound>& sounds)
+  std::vector<sf::Sound>& sounds,
+  std::vector<std::unique_ptr<Avatar>>& avatars)
 {
   long int white_time = game.white_time;
   long int black_time = game.black_time;
@@ -292,7 +205,16 @@ void display(sf::RenderWindow& window, struct CHESSGAME& game, sf::Font& font,
     text.setOrigin(sf::Vector2f((text.getCharacterSize() / 4) *
       game.white_player.length(), text.getCharacterSize() / 2));
     text.setPosition(sf::Vector2f(window.getView().getSize().x / 4,
-      (window.getView().getSize().y - text.getCharacterSize()) / 2));
+      window.getView().getSize().y / 2 - text.getCharacterSize()));
+    window.draw(text);
+
+    text.setCharacterSize(40);
+    text.setString(avatars[game.white_player_avatar]->toString());
+    text.setOrigin(sf::Vector2f((text.getCharacterSize() / 4) *
+      avatars[game.white_player_avatar]->toString().length(),
+      text.getCharacterSize() / 2));
+    text.setPosition(sf::Vector2f(window.getView().getSize().x / 4,
+      window.getView().getSize().y / 2));
     window.draw(text);
 
     std::string white_timer = white_min + ":" + white_sec + "." + white_millis;
@@ -301,7 +223,7 @@ void display(sf::RenderWindow& window, struct CHESSGAME& game, sf::Font& font,
     text.setOrigin(sf::Vector2f((text.getCharacterSize() / 4) *
       white_timer.length(), text.getCharacterSize() / 2));
     text.setPosition(sf::Vector2f(window.getView().getSize().x / 4,
-      (window.getView().getSize().y + text.getCharacterSize()) / 2));
+      window.getView().getSize().y / 2 + text.getCharacterSize()));
     window.draw(text);
 
     text.setCharacterSize(60);
@@ -310,7 +232,16 @@ void display(sf::RenderWindow& window, struct CHESSGAME& game, sf::Font& font,
     text.setOrigin(sf::Vector2f((text.getCharacterSize() / 4) *
       game.black_player.length(), text.getCharacterSize() / 2));
     text.setPosition(sf::Vector2f(window.getView().getSize().x * 3 / 4,
-      (window.getView().getSize().y - text.getCharacterSize()) / 2));
+      window.getView().getSize().y / 2 - text.getCharacterSize()));
+    window.draw(text);
+
+    text.setCharacterSize(40);
+    text.setString(avatars[game.black_player_avatar]->toString());
+    text.setOrigin(sf::Vector2f((text.getCharacterSize() / 4) *
+      avatars[game.black_player_avatar]->toString().length(),
+      text.getCharacterSize() / 2));
+    text.setPosition(sf::Vector2f(window.getView().getSize().x * 3 / 4,
+      window.getView().getSize().y / 2));
     window.draw(text);
 
     std::string black_timer = black_min + ":" + black_sec + "." + black_millis;
@@ -319,7 +250,7 @@ void display(sf::RenderWindow& window, struct CHESSGAME& game, sf::Font& font,
     text.setOrigin(sf::Vector2f((text.getCharacterSize() / 4) *
       black_timer.length(), text.getCharacterSize() / 2));
     text.setPosition(sf::Vector2f(window.getView().getSize().x * 3 / 4,
-      (window.getView().getSize().y + text.getCharacterSize()) / 2));
+      window.getView().getSize().y / 2 + text.getCharacterSize()));
     window.draw(text);
   } else {
 
@@ -329,7 +260,7 @@ void display(sf::RenderWindow& window, struct CHESSGAME& game, sf::Font& font,
     if (!game.gong_end)
     {
       stopNoises(sounds);
-      sounds[GONG_SOUND].play();
+      sounds[GONGSOUND_INDEX].play();
       game.gong_end = true;
     }
 
@@ -381,20 +312,20 @@ void display(sf::RenderWindow& window, struct CHESSGAME& game, sf::Font& font,
 struct CHESSGAME prompt()
 {
   struct CHESSGAME result;
-  std::string input_time;
+  std::string input;
 
   std::cout << "Combien de temps (en minutes) par joueur ? (Par défaut 5, \
 min 1 et max 60)\n";
-  getline(std::cin, input_time);
+  getline(std::cin, input);
 
-  if (input_time.empty())
+  if (input.empty())
   {
-    input_time = "5";
+    input = std::to_string(DEFAULT_TIME);
   }
 
   try
   {
-    result.time = std::stoi(input_time);
+    result.time = std::stoi(input);
   } catch (const std::invalid_argument& ia) {
     result.time = DEFAULT_TIME;
   }
@@ -421,6 +352,28 @@ min 1 et max 60)\n";
     result.white_player = DEFAULT_WHITE_PLAYER;
   }
 
+  std::cout << "Quel avatar pour les Blancs ? (Par défaut LE MAITRE DU \
+KUNG-FU)\n0: LE MAITRE DU KUNG-FU\n1: LE ROI DE LA JUNGLE\n";
+  getline(std::cin, input);
+
+  if (input.empty())
+  {
+    input = std::to_string(DEFAULT_AVATAR);
+  }
+
+  try
+  {
+    result.white_player_avatar = std::stoi(input);
+  } catch (const std::invalid_argument& ia) {
+    result.white_player_avatar = DEFAULT_AVATAR;
+  }
+
+  if ((result.white_player_avatar < DEFAULT_AVATAR) ||
+    (result.white_player_avatar >= AVATAR_NB))
+  {
+    result.white_player_avatar = DEFAULT_AVATAR;
+  }
+
   std::cout << "Qui joue les noirs ? (Par défaut \"Joueur 2\", \
 32 caractères max)\n";
   getline(std::cin, result.black_player);
@@ -439,18 +392,42 @@ min 1 et max 60)\n";
     result.black_player = DEFAULT_BLACK_PLAYER;
   }
 
+  std::cout << "Quel avatar pour les Noirs ? (Par défaut LE MAITRE DU \
+KUNG-FU)\n0: LE MAITRE DU KUNG-FU\n1: LE ROI DE LA JUNGLE\n";
+  getline(std::cin, input);
+
+  if (input.empty())
+  {
+    input = std::to_string(DEFAULT_AVATAR);
+  }
+
+  try
+  {
+    result.black_player_avatar = std::stoi(input);
+  } catch (const std::invalid_argument& ia) {
+    result.black_player_avatar = DEFAULT_AVATAR;
+  }
+
+  if ((result.black_player_avatar < DEFAULT_AVATAR) ||
+    (result.black_player_avatar >= AVATAR_NB))
+  {
+    result.black_player_avatar = DEFAULT_AVATAR;
+  }
+
   result.turn = WHITE_TURN;
   result.started = false;
   result.pressed = false;
+  result.white_player_id = true;
+  result.black_player_id = false;
   result.gong_end = false;
-
-  attributeSounds(result);
 
   std::cout << "\nCommandes:\n- Echap => Quitte le programme,\n- Control \
 gauche ou Entrée => Déclenche le compteur de l'adversaire,\n- Espace => \
 Remet les compteurs à 0,\n- Retour Arrière => Echange les couleurs des \
 joueurs,\n- \"+\" => Ajoute une minute (max 60) et remet les compteurs à \
-0,\n- \"-\" => Enlève une minute (min 1) et remet les compteurs à 0.\n\n";
+0,\n- \"-\" => Enlève une minute (min 1) et remet les compteurs à 0,\n\
+- Maj gauche => Change l'avatar des Blancs,\n- Tab => Change l'avatar des \
+Noirs.\n\n";
 
   return result;
 }
@@ -473,7 +450,8 @@ int main()
   std::vector<sf::SoundBuffer> buffers(NB_SOUNDS, sf::SoundBuffer());
 
   std::vector<std::string> wav_files = {
-    "gong.wav", "kungfu1.wav", "kungfu2.wav", "kungfu3.wav", "kungfu4.wav"
+    "gong.wav", "kungfu1.wav", "kungfu2.wav", "kungfu3.wav", "kungfu4.wav",
+    "monkey1.wav", "monkey2.wav", "monkey3.wav"
   };
 
   size_t index = 0;
@@ -490,15 +468,22 @@ int main()
     ++index;
   }
 
+  std::vector<std::unique_ptr<Avatar>> avatars;
+  avatars.reserve(AVATAR_NB);
+  avatars.emplace_back(new KungFuMasterAvatar());
+  avatars.emplace_back(new KingOfTheJungleAvatar());
+
   struct CHESSGAME game = prompt();
+  avatars[game.white_player_avatar]->attributeSounds();
+  avatars[game.black_player_avatar]->attributeSounds();
 
   sf::RenderWindow window(sf::VideoMode(WIN_WIDTH, WIN_HEIGHT),
     "Funny Chess Timer");
 
   while(window.isOpen())
   {
-    catchEvents(window, event, game, sounds);
-    display(window, game, font, sounds);
+    catchEvents(window, event, game, sounds, avatars);
+    display(window, game, font, sounds, avatars);
   }
 
   return 0;
