@@ -4,6 +4,11 @@
 /* shuffle() needs */
 #include <algorithm>
 
+/* and toUpperString() needs */
+#include <unicode/unistr.h>
+#include <unicode/ustream.h>
+#include <unicode/locid.h>
+
 /* init shuffle() seed */
 #include <chrono>
 
@@ -20,16 +25,19 @@
 #include <vector>
 
 #define GONGSOUND_INDEX 0
-#define KUNGFUSOUNDS_NB 4
+#define NB_KUNGFUSOUNDS 4
 #define FIRST_KUNGFUSOUND_INDEX 1
-#define LAST_KUNGFUSOUND_INDEX (FIRST_KUNGFUSOUND_INDEX + KUNGFUSOUNDS_NB)
-#define MONKEYSOUNDS_NB 3
+#define LAST_KUNGFUSOUND_INDEX (FIRST_KUNGFUSOUND_INDEX + NB_KUNGFUSOUNDS)
+#define NB_MONKEYSOUNDS 3
 #define FIRST_MONKEYSOUND_INDEX 5
-#define LAST_MONKEYSOUND_INDEX (FIRST_MONKEYSOUND_INDEX + MONKEYSOUNDS_NB)
-#define NB_SOUNDS (1 + KUNGFUSOUNDS_NB + MONKEYSOUNDS_NB)
+#define LAST_MONKEYSOUND_INDEX (FIRST_MONKEYSOUND_INDEX + NB_MONKEYSOUNDS)
+#define NB_DOUGSOUNDS 5
+#define FIRST_DOUGSOUND_INDEX 8
+#define LAST_DOUGSOUND_INDEX (FIRST_DOUGSOUND_INDEX + NB_DOUGSOUNDS)
+#define NB_SOUNDS (1 + NB_KUNGFUSOUNDS + NB_MONKEYSOUNDS + NB_DOUGSOUNDS)
 
 #define DEFAULT_AVATAR 0
-#define AVATAR_NB 2
+#define NB_AVATAR 3
 
 class Avatar
 {
@@ -41,6 +49,7 @@ class Avatar
     void playSound(std::vector<sf::Sound>& sounds, bool play_first_sound);
     void attributeSounds();
     virtual std::string toString() = 0;
+    icu::UnicodeString toUpperString();
 
   protected:
 
@@ -66,6 +75,16 @@ class KingOfTheJungleAvatar: public Avatar
 
     KingOfTheJungleAvatar(): Avatar(FIRST_MONKEYSOUND_INDEX,
       LAST_MONKEYSOUND_INDEX) {}
+
+    std::string toString();
+};
+
+class UnquestioningLoveAvatar: public Avatar
+{
+  public:
+
+    UnquestioningLoveAvatar(): Avatar(FIRST_DOUGSOUND_INDEX,
+      LAST_DOUGSOUND_INDEX) {}
 
     std::string toString();
 };

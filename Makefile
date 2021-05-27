@@ -4,8 +4,8 @@ H_DIR := include
 BIN_DIR := bin
 SRC_FILES := $(wildcard $(SRC_DIR)/*.cpp)
 OBJ_FILES := $(patsubst $(SRC_DIR)/%.cpp,$(OBJ_DIR)/%.o,$(SRC_FILES))
-FLAGS := -lsfml-graphics -lsfml-window -lsfml-system -lsfml-audio
-CPPFLAGS := -Wall -g -std=c++11 -I./$(H_DIR)
+FLAGS := -lsfml-graphics -lsfml-window -lsfml-system -lsfml-audio -licuuc -licuio
+CPPFLAGS := -Wall -g -std=c++17 -I./$(H_DIR)
 
 all: $(OBJ_FILES)
 	g++ -o $(BIN_DIR)/main $^ $(FLAGS)

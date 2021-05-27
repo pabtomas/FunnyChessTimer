@@ -26,6 +26,13 @@ void Avatar::playSound(std::vector<sf::Sound>& sounds, bool play_first_sound)
   }
 }
 
+icu::UnicodeString Avatar::toUpperString()
+{
+  std::string s = this->toString();
+  icu::UnicodeString u(s.c_str());
+  return u.toUpper();
+}
+
 std::string KungFuMasterAvatar::toString()
 {
   return std::string("Le Maitre du Kung-Fu");
@@ -34,4 +41,9 @@ std::string KungFuMasterAvatar::toString()
 std::string KingOfTheJungleAvatar::toString()
 {
   return std::string("Le Roi de la Jungle");
+}
+
+std::string UnquestioningLoveAvatar::toString()
+{
+  return std::string("L'Amour Inconditionnel");
 }

@@ -3,6 +3,12 @@
 #include <cctype>
 #include <locale>
 
+/* to get files in assets/sounds/ dir */
+#include <filesystem>
+
+/* to use unique_ptr */
+#include <memory>
+
 /* Timer class needs */
 #include <chrono>
 
@@ -36,8 +42,8 @@
 #define MILLIS_PER_SEC 1000
 #define MILLIS_PER_MIN (MILLIS_PER_SEC * SECS_PER_MIN)
 
-#define DEFAULT_WHITE_PLAYER "Joueur 1"
-#define DEFAULT_BLACK_PLAYER "Joueur 2"
+#define DEFAULT_PLAYER1 "Joueur 1"
+#define DEFAULT_PLAYER2 "Joueur 2"
 
 class Timer
 {
@@ -61,22 +67,25 @@ class Timer
     }
 };
 
+struct PLAYER
+{
+  std::string name;
+  long int time;
+  size_t avatar;
+};
+
 struct CHESSGAME
 {
   int time;
   bool turn;
   bool started;
+  bool ended;
   bool pressed;
   bool gong_end;
   Timer timer;
-  long int white_time;
-  long int black_time;
-  std::string white_player;
-  std::string black_player;
-  size_t white_player_avatar;
-  size_t black_player_avatar;
-  bool white_player_id;
-  bool black_player_id;
+  struct PLAYER player1;
+  struct PLAYER player2;
+  bool is_player1_playing_white;
 };
 
 void leftTrim(std::string &s)
