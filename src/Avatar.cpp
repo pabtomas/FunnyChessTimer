@@ -1,5 +1,11 @@
 #include "Avatar.h"
 
+Avatar::Avatar(size_t first, size_t last): m_FirstIndex(first),
+  m_LastIndex(last)
+{
+  attributeSounds();
+}
+
 void Avatar::attributeSounds()
 {
   std::vector<size_t> playable_sounds = {};
@@ -28,7 +34,7 @@ void Avatar::playSound(std::vector<sf::Sound>& sounds, bool play_first_sound)
 
 icu::UnicodeString Avatar::toUpperString()
 {
-  std::string s = this->toString();
+  std::string s = toString();
   icu::UnicodeString u(s.c_str());
   return u.toUpper();
 }
@@ -46,4 +52,9 @@ std::string KingOfTheJungleAvatar::toString()
 std::string UnquestioningLoveAvatar::toString()
 {
   return std::string("L'Amour Inconditionnel");
+}
+
+std::string TheBullRiderAvatar::toString()
+{
+  return std::string("Le Dompteur de Taureaux");
 }

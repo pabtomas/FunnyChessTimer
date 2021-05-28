@@ -1,5 +1,17 @@
 #include "main.h"
 
+void start(struct CHESSGAME& game,
+  std::vector<std::unique_ptr<Avatar>>& avatars)
+{
+  game.started = false;
+  game.ended = false;
+  game.player1.time = game.time * MILLIS_PER_MIN;
+  game.player2.time = game.time * MILLIS_PER_MIN;
+  game.turn = WHITE_TURN;
+  avatars[game.player1.avatar]->attributeSounds();
+  avatars[game.player2.avatar]->attributeSounds();
+}
+
 void update(struct CHESSGAME& game)
 {
   if (game.started)
@@ -54,41 +66,19 @@ void catchEvents(sf::RenderWindow& window, sf::Event& event,
           {
             window.close();
           } else if (event.key.code == sf::Keyboard::Space) {
-            game.started = false;
-            game.ended = false;
-            game.player1.time = game.time * MILLIS_PER_MIN;
-            game.player2.time = game.time * MILLIS_PER_MIN;
-            game.turn = WHITE_TURN;
-            avatars[game.player1.avatar]->attributeSounds();
-            avatars[game.player2.avatar]->attributeSounds();
+            start(game, avatars);
           } else if (event.key.code == sf::Keyboard::Add) {
-            game.started = false;
-            game.ended = false;
-
             if (game.time < MAX_TIME)
             {
               game.time++;
             }
-
-            game.player1.time = game.time * MILLIS_PER_MIN;
-            game.player2.time = game.time * MILLIS_PER_MIN;
-            game.turn = WHITE_TURN;
-            avatars[game.player1.avatar]->attributeSounds();
-            avatars[game.player2.avatar]->attributeSounds();
+            start(game, avatars);
           } else if (event.key.code == sf::Keyboard::Subtract) {
-            game.started = false;
-            game.ended = false;
-
             if (game.time > MIN_TIME)
             {
               game.time--;
             }
-
-            game.player1.time = game.time * MILLIS_PER_MIN;
-            game.player2.time = game.time * MILLIS_PER_MIN;
-            game.turn = WHITE_TURN;
-            avatars[game.player1.avatar]->attributeSounds();
-            avatars[game.player2.avatar]->attributeSounds();
+            start(game, avatars);
           } else if (event.key.code == sf::Keyboard::BackSpace) {
             if (!game.ended)
             {
@@ -98,6 +88,14 @@ void catchEvents(sf::RenderWindow& window, sf::Event& event,
               {
                 game.turn = !game.turn;
               }
+            }
+          } else if (event.key.code == sf::Keyboard::Tab) {
+            if (!game.started)
+            {
+              struct PLAYER tmp = game.player1;
+              game.player1 = game.player2;
+              game.player2 = tmp;
+              game.is_player1_playing_white = !game.is_player1_playing_white;
             }
           } else if (event.key.code == sf::Keyboard::LControl) {
             if (((game.is_player1_playing_white && (game.turn == WHITE_TURN))
@@ -334,9 +332,16 @@ struct CHESSGAME prompt(std::vector<std::unique_ptr<Avatar>>& avatars)
   std::string input;
   size_t index = 0;
 
-  std::cout << "Combien de temps (en minutes) par joueur ? (Par défaut " <<
+  std::cout << "\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\
+\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\
+\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\
+\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\
+\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\
+\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\
+\u2500\u2500\u2500\u2500\u2500\u2500\n\
+Combien de temps (en minutes) par joueur ? (Par défaut " <<
     std::to_string(DEFAULT_TIME) << ", min " << std::to_string(MIN_TIME) <<
-    " et max " << std::to_string(MAX_TIME) << ")\n";
+    " et max " << std::to_string(MAX_TIME) << ")\n\nRéponse: ";
   getline(std::cin, input);
 
   if (input.empty())
@@ -361,8 +366,15 @@ struct CHESSGAME prompt(std::vector<std::unique_ptr<Avatar>>& avatars)
   result.player1.time = result.time * MILLIS_PER_MIN;
   result.player2.time = result.time * MILLIS_PER_MIN;
 
-  std::cout << "Qui joue les Blancs ? (Par défaut \"" << DEFAULT_PLAYER1
-    << "\", " << std::to_string(MAX_LENGTH_PLAYER_NAME) << " caractères max)\n";
+  std::cout << "\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\
+\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\
+\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\
+\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\
+\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\
+\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\
+\u2500\u2500\u2500\u2500\u2500\u2500\n\
+Qui joue les Blancs ? (Par défaut \"" << DEFAULT_PLAYER1 << "\", " <<
+    std::to_string(MAX_LENGTH_PLAYER_NAME) << " caractères max)\n\nRéponse: ";
   getline(std::cin, result.player1.name);
 
   trim(result.player1.name);
@@ -373,12 +385,25 @@ struct CHESSGAME prompt(std::vector<std::unique_ptr<Avatar>>& avatars)
     result.player1.name = DEFAULT_PLAYER1;
   }
 
-  std::cout << "Quel avatar pour les Blancs ? (Par défaut " <<
-    avatars[0]->toUpperString() << ")\n";
+  std::cout << "\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\
+\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\
+\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\
+\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\
+\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\
+\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\
+\u2500\u2500\u2500\u2500\u2500\u2500\n\
+Choisissez le chiffre correspondant pour sélectionner l'avatar des Blancs\n\
+    (Par défaut " << avatars[0]->toUpperString() << ")\n\n";
   for (const std::unique_ptr<Avatar>& avatar: avatars)
   {
-    std::cout << std::to_string(index) << ": " << avatar->toUpperString() <<
-      '\n';
+    if (index < avatars.size() - 1)
+    {
+      std::cout << std::to_string(index) << " -> " << avatar->toUpperString()
+        << '\n';
+    } else {
+      std::cout << std::to_string(index) << " -> " << avatar->toUpperString()
+        << "\n\nRéponse: ";
+    }
     ++index;
   }
   getline(std::cin, input);
@@ -401,8 +426,15 @@ struct CHESSGAME prompt(std::vector<std::unique_ptr<Avatar>>& avatars)
     result.player1.avatar = DEFAULT_AVATAR;
   }
 
-  std::cout << "Qui joue les Noirs ? (Par défaut \"" << DEFAULT_PLAYER1
-    << "\", " << std::to_string(MAX_LENGTH_PLAYER_NAME) << " caractères max)\n";
+  std::cout << "\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\
+\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\
+\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\
+\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\
+\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\
+\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\
+\u2500\u2500\u2500\u2500\u2500\u2500\n\
+Qui joue les Noirs ? (Par défaut \"" << DEFAULT_PLAYER1 << "\", " <<
+    std::to_string(MAX_LENGTH_PLAYER_NAME) << " caractères max)\n\nRéponse: ";
   getline(std::cin, result.player2.name);
 
   trim(result.player2.name);
@@ -420,12 +452,25 @@ struct CHESSGAME prompt(std::vector<std::unique_ptr<Avatar>>& avatars)
   }
 
   index = 0;
-  std::cout << "Quel avatar pour les Blancs ? (Par défaut " <<
-    avatars[0]->toUpperString() << ")\n";
+  std::cout << "\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\
+\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\
+\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\
+\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\
+\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\
+\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\
+\u2500\u2500\u2500\u2500\u2500\u2500\n\
+Choisissez le chiffre correspondant pour sélectionner l'avatar des Noirs\n\
+(Par défaut " << avatars[0]->toUpperString() << ")\n\n";
   for (const std::unique_ptr<Avatar>& avatar: avatars)
   {
-    std::cout << std::to_string(index) << ": " << avatar->toUpperString() <<
-      '\n';
+    if (index < avatars.size() - 1)
+    {
+      std::cout << std::to_string(index) << " -> " << avatar->toUpperString()
+        << '\n';
+    } else {
+      std::cout << std::to_string(index) << " -> " << avatar->toUpperString()
+        << "\n\nRéponse: ";
+    }
     ++index;
   }
   getline(std::cin, input);
@@ -454,29 +499,116 @@ struct CHESSGAME prompt(std::vector<std::unique_ptr<Avatar>>& avatars)
   result.pressed = false;
   result.is_player1_playing_white = true;
 
-  std::cout << "\n\u250C\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\
+  std::cout << "\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\
 \u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\
 \u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\
 \u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\
 \u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\
 \u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\
-\u2500\u2500\u2500\u2500\u2500\u2510\n\u2502 - Echap => Quitte le programme, \
-                                        \u2502\n\u2502 - Ctrl gauche ou \
-Entrée => Déclenche le compteur de l'adversaire,       \u2502\n\u2502 - \
-Espace => Réinitialise les compteurs,                                 \u2502\
-\n\u2502 - Retour Arrière => Echange les couleurs des joueurs,              \
-     \u2502\n\u2502 - \"+\" => Ajoute une minute (max 60) et réinitialise les\
- compteurs,      \u2502\n\u2502 - \"-\" => Enlève une minute (min 1) et\
- réinitialise les compteurs,       \u2502\n\u2502 - Maj gauche => Change \
-l'avatar du Joueur 1,                            \u2502\n\u2502 - \".\" => \
-Change l'avatar du Joueur 2.                                   \u2502\n\u2514\
+\u2500\u2500\u2500\u2500\u2500\u2500\n\
+\u250F\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2533\
+\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2533\u2501\
+\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\
+\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\
+\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\
+\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\
+\u2501\u2501\u2513\n\
+\u2503 Joueur 1 \u2503 Joueur 2 \u2503             Description de la \
+commande            \u2503\n\
+\u2521\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u253B\
+\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2547\u2501\
+\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\
+\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\
+\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\
+\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\
+\u2501\u2501\u2529\n\
+\u2502        Echap        \u2502                Quitte le programme\
+                \u2502\n\
+\u251C\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\
+\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u253C\u2500\
+\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\
+\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\
+\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\
+\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\
+\u2500\u2500\u2524\n\
+\u2502        Espace       \u2502           Réinitialise les chronomètres\
+           \u2502\n\
+\u251C\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\
+\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u253C\u2500\
+\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\
+\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\
+\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\
+\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\
+\u2500\u2500\u2524\n\
+\u2502                     \u2502             Ajoute une minute (max 60)\
+            \u2502\n\
+\u2502          +          \u2502                         et\
+                        \u2502\n\
+\u2502                     \u2502           réinitialise les chronomètres\
+           \u2502\n\
+\u251C\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\
+\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u253C\u2500\
+\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\
+\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\
+\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\
+\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\
+\u2500\u2500\u2524\n\
+\u2502                     \u2502             Enlève une minute (min 1)\
+             \u2502\n\
+\u2502          -          \u2502                         et\
+                        \u2502\n\
+\u2502                     \u2502           réinitialise les chronomètres\
+           \u2502\n\
+\u251C\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\
+\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u253C\u2500\
+\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\
+\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\
+\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\
+\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\
+\u2500\u2500\u2524\n\
+\u2502    Retour Arrière   \u2502          Echange les couleurs des joueurs\
+         \u2502\n\
+\u251C\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\
+\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u253C\u2500\
+\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\
+\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\
+\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\
+\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\
+\u2500\u2500\u2524\n\
+\u2502         Tab         \u2502         Echange les commandes des joueurs\
+         \u2502\n\
+\u251C\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u252C\
+\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u253C\u2500\
+\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\
+\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\
+\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\
+\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\
+\u2500\u2500\u2524\n\
+\u2502   Ctrl   \u2502  Entrée  \u2502      Déclenche le chronomètre de \
+l'adversaire     \u2502\n\
+\u251C\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u253C\
+\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u253C\u2500\
+\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\
+\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\
+\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\
+\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\
+\u2500\u2500\u2524\n\
+\u2502    Maj   \u2502    .     \u2502             Change l'avatar du joueur\
+             \u2502\n\
+\u2514\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2534\
+\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2534\u2500\
+\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\
+\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\
+\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\
+\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\
+\u2500\u2500\u2518\n\
 \u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\
 \u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\
 \u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\
 \u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\
 \u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\
 \u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\
-\u2500\u2518\n\n";
+\u2500\u2500\u2500\n";
 
   return result;
 }
@@ -532,11 +664,7 @@ int main()
   avatars.emplace_back(new KungFuMasterAvatar());
   avatars.emplace_back(new KingOfTheJungleAvatar());
   avatars.emplace_back(new UnquestioningLoveAvatar());
-
-  for (std::unique_ptr<Avatar>& avatar: avatars)
-  {
-    avatar->attributeSounds();
-  }
+  avatars.emplace_back(new TheBullRiderAvatar());
 
   struct CHESSGAME game = prompt(avatars);
 

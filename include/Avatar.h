@@ -34,17 +34,20 @@
 #define NB_DOUGSOUNDS 5
 #define FIRST_DOUGSOUND_INDEX 8
 #define LAST_DOUGSOUND_INDEX (FIRST_DOUGSOUND_INDEX + NB_DOUGSOUNDS)
-#define NB_SOUNDS (1 + NB_KUNGFUSOUNDS + NB_MONKEYSOUNDS + NB_DOUGSOUNDS)
+#define NB_MEXICANSOUNDS 4
+#define FIRST_MEXICANSOUND_INDEX 13
+#define LAST_MEXICANSOUND_INDEX (FIRST_MEXICANSOUND_INDEX + NB_MEXICANSOUNDS)
+#define NB_SOUNDS (1 + NB_KUNGFUSOUNDS + NB_MONKEYSOUNDS + NB_DOUGSOUNDS + \
+  NB_MEXICANSOUNDS)
 
 #define DEFAULT_AVATAR 0
-#define NB_AVATAR 3
+#define NB_AVATAR 4
 
 class Avatar
 {
   public:
 
-    Avatar(size_t first, size_t last): m_FirstIndex(first),
-      m_LastIndex(last) {};
+    Avatar(size_t first, size_t last);
 
     void playSound(std::vector<sf::Sound>& sounds, bool play_first_sound);
     void attributeSounds();
@@ -85,6 +88,16 @@ class UnquestioningLoveAvatar: public Avatar
 
     UnquestioningLoveAvatar(): Avatar(FIRST_DOUGSOUND_INDEX,
       LAST_DOUGSOUND_INDEX) {}
+
+    std::string toString();
+};
+
+class TheBullRiderAvatar: public Avatar
+{
+  public:
+
+    TheBullRiderAvatar(): Avatar(FIRST_MEXICANSOUND_INDEX,
+      LAST_MEXICANSOUND_INDEX) {}
 
     std::string toString();
 };
