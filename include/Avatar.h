@@ -37,11 +37,14 @@
 #define NB_MEXICANSOUNDS 4
 #define FIRST_MEXICANSOUND_INDEX 13
 #define LAST_MEXICANSOUND_INDEX (FIRST_MEXICANSOUND_INDEX + NB_MEXICANSOUNDS)
+#define NB_MUKUNASOUNDS 10
+#define FIRST_MUKUNASOUND_INDEX 17
+#define LAST_MUKUNASOUND_INDEX (FIRST_MUKUNASOUND_INDEX + NB_MUKUNASOUNDS)
 #define NB_SOUNDS (1 + NB_KUNGFUSOUNDS + NB_MONKEYSOUNDS + NB_DOUGSOUNDS + \
-  NB_MEXICANSOUNDS)
+  NB_MEXICANSOUNDS + NB_MUKUNASOUNDS)
 
 #define DEFAULT_AVATAR 0
-#define NB_AVATAR 4
+#define NB_AVATAR 5
 
 class Avatar
 {
@@ -92,12 +95,22 @@ class UnquestioningLoveAvatar: public Avatar
     std::string toString();
 };
 
-class TheBullRiderAvatar: public Avatar
+class GuitarPlayerAvatar: public Avatar
 {
   public:
 
-    TheBullRiderAvatar(): Avatar(FIRST_MEXICANSOUND_INDEX,
+    GuitarPlayerAvatar(): Avatar(FIRST_MEXICANSOUND_INDEX,
       LAST_MEXICANSOUND_INDEX) {}
+
+    std::string toString();
+};
+
+class BlackEmperorAvatar: public Avatar
+{
+  public:
+
+    BlackEmperorAvatar(): Avatar(FIRST_MUKUNASOUND_INDEX,
+      LAST_MUKUNASOUND_INDEX) {}
 
     std::string toString();
 };

@@ -664,7 +664,8 @@ int main()
   avatars.emplace_back(new KungFuMasterAvatar());
   avatars.emplace_back(new KingOfTheJungleAvatar());
   avatars.emplace_back(new UnquestioningLoveAvatar());
-  avatars.emplace_back(new TheBullRiderAvatar());
+  avatars.emplace_back(new GuitarPlayerAvatar());
+  avatars.emplace_back(new BlackEmperorAvatar());
 
   struct CHESSGAME game = prompt(avatars);
 

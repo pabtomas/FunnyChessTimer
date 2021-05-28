@@ -54,7 +54,12 @@ std::string UnquestioningLoveAvatar::toString()
   return std::string("L'Amour Inconditionnel");
 }
 
-std::string TheBullRiderAvatar::toString()
+std::string GuitarPlayerAvatar::toString()
 {
-  return std::string("Le Dompteur de Taureaux");
+  return std::string("Le Joueur de Guitare");
+}
+
+std::string BlackEmperorAvatar::toString()
+{
+  return std::string("L'Empereur Noir");
 }
