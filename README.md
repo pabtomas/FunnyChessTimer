@@ -1,4 +1,4 @@
-### Chess Timer for personnal use
+### a chess timer for private usage
 
 The only purpose of this repository is keeping this work if it is deleted
 locally. There are <b>no good practices, clean and efficient code on this
